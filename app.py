@@ -1,20 +1,35 @@
+from flask import Flask
 import serial
 import threading
 import time
-
 # pyrefly: ignore [missing-import]
-from flask import Flask, jsonify, render_template_string
+import firebase_admin
+# pyrefly: ignore [missing-import]
+from firebase_dmin import credentials
+# pyrefly: ignore [missing-import]
+from firebase_admin import firestore
+# pyrefly: ignore [missing-import]
+from flask import flask, jsonify, render_template_string
+
+cred = credentials.Certificate('./arduino_service.json')
+firebase_admin.initialize_app(cred)
+db = firestore.client()
+
 
 app = Flask(__name__)
 
-PORTA_SERIAL = 'COM4' 
+dados_sensor = {"distancia": "Desconhecido", "timestamp": " "}
+
+PORTA_SERIAL = 'COM6'
 BAUD_RATE = 9600
 
 distancia_atual = 0.0
 def ler_porta_serial():
+    global dados_sensor
     global distancia_atual
     try:
         ser = serial.Serial(PORTA_SERIAL, BAUD_RATE, timeout=1)
+        time.sleep(2)
         print(f"Conectado ao Arduino na porta {PORTA_SERIAL}")
         
         while True:
@@ -25,8 +40,13 @@ def ler_porta_serial():
                     try:
                         valor_str = linha.split("-")[1].strip()
                         distancia_atual = float(valor_str)
+                        dados_sensor.distancia = distancia_atual
+                        dados_sensor.timestamp = firestore.SERVER_TIMESTAMP
+                        #db.collection('historico_sensores').add(dados_sensor)
+                       # print(f"Dados enviados para o Firestore: {distancia_atual}")
                     except ValueError:
                         pass
+                    time.sleep(0.01)
     except Exception as e:
         print(f'Erro na comunicação Serial: {e}')
         print('Verifique se a porta está correta ou se o monitor serial da IDE não está aberto.')
