@@ -1,0 +1,6 @@
+arduino_service.json
+__pycache__/
+*.py[cod]
+dev_iot/
+.env
+.vscode/

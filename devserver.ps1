@@ -4,7 +4,7 @@ if (Test-Path "dev_iot\Scripts\Activate.ps1") {
 }
 
 # Instala as dependências do Python
-pip install -r requirements.txt
+python -m pip install -r requirements.txt
 
 # Instala as ferramentas do Firebase (globalmente)
 npm install -g firebase-tools
